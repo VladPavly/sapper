@@ -3,21 +3,32 @@ from colorama import Fore, Back, Style
 
 class Main():
     def __init__(self, xs, ys):
+        # Создаём пустую карту
         self.map = self.createEmptyMap(xs, ys, 0)
+        # Добавляем на карту бомбы
         self.map = self.generateBombs(self.map, 40)
+        # Добавляем на карту цифры
         self.map = self.generateNumbers(self.map)
+        # Создаём пустую карту клеток которые 
+        # пользователь проверил
         self.show = self.createEmptyMap(xs, ys, 0)
+        # Отображаем карту
         self.showMap(self.map)
         
         
+    # Создаём 2д массив заполненый placerом
+    # с размером xs(ширина) и ys(длина) 
     def createEmptyMap(self, xs, ys, placer):
         return [[placer for i in range(xs)] for i in range(ys)]
         
+    # Генерируем бомбы на карте
     def generateBombs(self, map, oneTo):
         for y in range(len(map)):
             for x in range(len(map[0])):
+                # Если randint возращает 0 ставим в ячейку 10(мину)
                 if randint(0, oneTo) == 0:
                     map[y][x] = 10
+                # Иначе оставляем её пустой
                 else:
                     map[y][x] = 0
         return map
@@ -25,39 +36,59 @@ class Main():
     def generateNumbers(self, map):
         for x in range(len(map)):
             for y in range(len(map[0])): 
+                # Если ячейка пустая
                 if not map[x][y] == 10:
+                    # Количество соседних бомб
                     s = 0
+                    # Если есть бомба в верхней клетке +1
+                    # try нужен чтобы избежать проблем с концом массива
                     try:
                         if map[x][y+1] == 10:
                             s += 1
                     except:
                         pass
+                    
+                    # Если есть бомба в нижней клетке +1
                     if map[x][y-1] == 10 and y > 0:
                         s += 1  
+                        
+                    # Если есть бомба левой верхней клетке +1
                     try:
                         if map[x-1][y+1] == 10 and x > 0:
                             s += 1
                     except:
                         pass
+                    
+                    # Если есть бомба в левой нижней клетке +1
                     if map[x-1][y-1] == 10 and y > 0 and x > 0:
                         s += 1  
+                        
+                    # Если есть бомба в правой верхней клетке +1
                     try:
                         if map[x+1][y+1] == 10:
                             s += 1
                     except:
                         pass
+                    
+                    # Если есть бомба в правой нижней клетке +1
                     try:
                         if map[x+1][y-1] == 10 and y > 0:
                             s += 1
                     except:
-                        pass  
+                        pass
+                    
+                    # Если есть бомба в левой клетке +1
                     if map[x-1][y] == 10 and x > 0:
                         s += 1
+                    
+                    # Если есть бомба в правой клетке +1
                     try:
                         if map[x+1][y] == 10 and x > 0:
                             s += 1
                     except:
                         pass 
+                    
+                    # Устанавливаем в клетку количество соседних с ней бомб
                     map[x][y] = s
         return map
     
