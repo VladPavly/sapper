@@ -141,6 +141,8 @@ class Main():
             print(tp)
             
     def openZeros(self, map, checked, show, x, y):
+        # Открываем соседние с 0 клетки. Если они ещё
+        # не проверялись и в них 0 рекурсивно проверяем эти клетки.
         try:
             show[y][x+1] = 1
             if map[y][x+1] == 0 and not [x+1, y] in checked:
