@@ -178,7 +178,7 @@ class Main():
                     return False
         return True
             
-print('How to play? \nEnter the height and width of the map. \nEnter X, Y from the map to select. \nExample: 0, 0 \nEnter what you want to do check, flag or unflag. \nExample 1: check \nExample 2: flag \nExample 3: unflag')
+print('How to play? \n1. Enter the height and width of the map. \n2. Enter X, Y from the map to select. \nExample 2.1: 0, 0 \n3. Enter what you want to do check, flag or unflag. \nExample 3.1: check \nExample 3.2: flag \nExample 3.3: unflag \nRepeat until you win or lose.')
 
 height = int(input('Enter a height: '))       
 width = int(input('Enter a width: '))     
