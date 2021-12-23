@@ -187,15 +187,22 @@ width = int(input('Enter a width: '))
         
 main = Main(height, width)
 while True:
+    # Просим пользователя ввести X и Y клетки
     text_input = input('Enter the X, Y: ')
     x = int(text_input.split(', ')[0])
     y = int(text_input.split(', ')[1])
+    
+    # Просим пользователя выбрать проверьти клетку, установить флаг или убрать флаг
     text_input = input('Check, flag or unflag: ')
     if text_input == 'check':
+        # Открываем выбранную клетку
         main.show[y][x] = 1
+        # Если в ней 0 открываем соседний клетки
         if main.map[y][x] == 0:
             main.show = main.openZeros(main.map, [[x, y]], main.show, x, y)
+        # Отображаем карту
         main.showMap(main.map)
+        # Если в клетке бомба заканчиваем игру
         if main.map[y][x] == 10:
             print('Game over!')
             break
