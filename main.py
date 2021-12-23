@@ -93,33 +93,49 @@ class Main():
         return map
     
     def showMap(self, map):
+        # Массив(дисплей) того что нужно вывести на экран
         ftp = self.createEmptyMap(len(map[0])+1, len(map)+1, '   ')
+        
+        # Выводим X координаты
         for x in range(len(map[0])):
             ftp[0][x+1] = f'{x} '
-        #print    
+        
+        
         for y, row in enumerate(map):
+            # Выводим Y координату
             ftp[y+1][0] = f'{y} '
-            for x, item in enumerate(row):
+            for x, item in enumerate(row):    
+                # Если в клетке мина и её надо отобразить 
+                # отображаем красную букву B
                 if item == 10 and self.show[y][x] == 1:
                     ftp[y+1][x+1] = f'{Fore.RED}B  {Fore.RESET}'
+                # Иначе если в клетке стоит флажок отображаем
+                # красную букву F
                 elif item > 10:
                     ftp[y+1][x+1] = f'{Fore.RED}F  {Fore.RESET}'
+                # Иначе если в клетке любая другая цифра и её надо отобразить
+                # то отображаем 0 белым, а любую другую цифры жёлтой
                 elif self.show[y][x] == 1:
                     if not item == 0:
                         ftp[y+1][x+1] = f'{Fore.YELLOW}{item}  {Fore.RESET}'
                     else:
                         ftp[y+1][x+1] = f'{Fore.WHITE}{item}  {Fore.RESET}'
+                # Иначе если клетка не открыта отображаем белый ?
                 else:
                     ftp[y+1][x+1] = f'{Fore.WHITE}?  {Fore.RESET}'
-            #print
+        # Выводим дисплей на экран
         self.showArray(ftp)
             
     def showArray(self, array):
         for row in array:
+            # Строка которую надо вывести
             tp = ''
             for item in row:
+                # Если строка имеет длину 2 добавить к ней пробел
+                # и отобразить
                 if len(item) == 2:
                     tp += f'{item} '
+                # В остальных случаях отобразить строку
                 else:
                     tp += item
             print(tp)
