@@ -170,8 +170,10 @@ class Main():
     def isWin(self, map):
         for row in map:
             for item in row:
+                # Если в клетке бомба возвращаем False
                 if item == 10:
                     return False
+                # Если в клетке флажок не на бомбе возвращаем False
                 if item > 10 and not item == 20:
                     return False
         return True
