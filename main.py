@@ -1,19 +1,37 @@
 from random import randint
-from colorama import Fore, Back, Style
+from tkinter import *
+from functools import partial
+import keyboard
+import time
 
 class Main():
-    def __init__(self, xs, ys):
+    def __init__(self, xs, ys, bomb_count):
         # Создаём пустую карту
         self.map = self.createEmptyMap(xs, ys, 0)
         # Добавляем на карту бомбы
-        self.map = self.generateBombs(self.map, 40)
+        coef = round(xs * ys / bomb_count)
+        self.map = self.generateBombs(self.map, coef)
         # Добавляем на карту цифры
         self.map = self.generateNumbers(self.map)
         # Создаём пустую карту клеток которые 
         # пользователь проверил
         self.show = self.createEmptyMap(xs, ys, 0)
         # Отображаем карту
-        self.showMap(self.map)
+        self.time = time.time()
+        self.timer_column = round(xs/2)
+        self.play = True
+        
+        self.window = Tk()  
+        self.window.title("Sapper") 
+        self.window.geometry(f'{xs*31}x{ys*36+25}') 
+        
+        self.timer = Label(self.window, text='0:0')
+        self.timer.grid(column=0, row=0)
+        self.showMap(self.map)     
+        
+        
+        self.updateTime()
+        self.window.mainloop()
         
         
     # Создаём 2д массив заполненый placerом
@@ -94,55 +112,56 @@ class Main():
     
     def showMap(self, map):
         # Массив(дисплей) того что нужно вывести на экран
-        ftp = self.createEmptyMap(len(map[0])+1, len(map)+1, '   ')
-        
-        # Выводим X координаты
-        for x in range(len(map[0])):
-            ftp[0][x+1] = f'{x} '
+        ftp = self.createEmptyMap(len(map[0]), len(map), '   ')
         
         
         for y, row in enumerate(map):
             # Выводим Y координату
-            ftp[y+1][0] = f'{y} '
             for x, item in enumerate(row):    
                 # Если в клетке мина и её надо отобразить 
                 # отображаем красную букву B
                 if item == 10 and self.show[y][x] == 1:
-                    ftp[y+1][x+1] = f'{Fore.RED}B  {Fore.RESET}'
+                    ftp[y][x] = f'B'
                 # Иначе если в клетке стоит флажок отображаем
                 # красную букву F
                 elif item > 10:
-                    ftp[y+1][x+1] = f'{Fore.RED}F  {Fore.RESET}'
+                    ftp[y][x] = f'F'
                 # Иначе если в клетке любая другая цифра и её надо отобразить
                 # то отображаем 0 белым, а любую другую цифры жёлтой
                 elif self.show[y][x] == 1:
                     if not item == 0:
-                        ftp[y+1][x+1] = f'{Fore.YELLOW}{item}  {Fore.RESET}'
+                        ftp[y][x] = f'{item}'
                     else:
-                        ftp[y+1][x+1] = f'{Fore.WHITE}{item}  {Fore.RESET}'
+                        ftp[y][x] = f'{item}'
                 # Иначе если клетка не открыта отображаем белый ?
                 else:
-                    ftp[y+1][x+1] = f'{Fore.WHITE}?  {Fore.RESET}'
+                    ftp[y][x] = f'?'
         # Выводим дисплей на экран
         self.showArray(ftp)
             
     def showArray(self, array):
-        for row in array:
-            # Строка которую надо вывести
-            tp = ''
-            for item in row:
-                # Если строка имеет длину 2 добавить к ней пробел
-                # и отобразить
-                if len(item) == 2:
-                    tp += f'{item} '
-                # В остальных случаях отобразить строку
+        self.cleanWindow()
+        
+        self.timer = Label(self.window, text='0:0')
+        self.timer.grid(column=self.timer_column, row=0)
+        
+        for y, row in enumerate(array):
+            for x, item in enumerate(row):
+                if item == '?':
+                    Button(self.window, text=item, command=partial(self.click, x=x, y=y), height=2, width=3, fg='#808080').grid(column=x, row=y+1)
+                elif item == '0':
+                    Button(self.window, text=item, command=partial(self.click, x=x, y=y), height=2, width=3, fg='#808080').grid(column=x, row=y+1) 
+                elif item == '1':
+                    Button(self.window, text=item, command=partial(self.click, x=x, y=y), height=2, width=3, fg='#0000FF').grid(column=x, row=y+1) 
+                elif item == '2':
+                    Button(self.window, text=item, command=partial(self.click, x=x, y=y), height=2, width=3, fg='#00ff00').grid(column=x, row=y+1)
+                elif item == '3':
+                    Button(self.window, text=item, command=partial(self.click, x=x, y=y), height=2, width=3, fg='#FF0000').grid(column=x, row=y+1)
                 else:
-                    tp += item
-            print(tp)
+                    Button(self.window, text=item, command=partial(self.click, x=x, y=y), height=2, width=3, fg='#00007F').grid(column=x, row=y+1)
+                
             
     def openZeros(self, map, checked, show, x, y):
-        # Открываем соседние с 0 клетки. Если они ещё
-        # не проверялись и в них 0 рекурсивно проверяем эти клетки.
         try:
             show[y][x+1] = 1
             if map[y][x+1] == 0 and not [x+1, y] in checked:
@@ -170,6 +189,10 @@ class Main():
         return show
     
     def isWin(self, map):
+        for y, row in enumerate(self.show):
+            for x, item in enumerate(row):
+                if item == 0 and not map[y][x] == 20:
+                    return False
         for row in map:
             for item in row:
                 # Если в клетке бомба возвращаем False
@@ -180,44 +203,99 @@ class Main():
                     return False
         return True
             
-print('How to play? \n1. Enter the height and width of the map. \n2. Enter X, Y from the map to select. \nExample 2.1: 0, 0 \n3. Enter what you want to do check, flag or unflag. \nExample 3.1: check \nExample 3.2: flag \nExample 3.3: unflag \nRepeat until you win or lose.')
-
-height = int(input('Enter a height: '))       
-width = int(input('Enter a width: '))     
-        
-main = Main(height, width)
-while True:
-    # Просим пользователя ввести X и Y клетки
-    text_input = input('Enter the X, Y: ')
-    x = int(text_input.split(', ')[0])
-    y = int(text_input.split(', ')[1])
     
-    # Просим пользователя выбрать проверьти клетку, установить флаг или убрать флаг
-    text_input = input('Check, flag or unflag: ')
-    if text_input == 'check':
-        # Открываем выбранную клетку
-        main.show[y][x] = 1
-        # Если в ней 0 открываем соседний клетки
-        if main.map[y][x] == 0:
-            main.show = main.openZeros(main.map, [[x, y]], main.show, x, y)
-        # Отображаем карту
-        main.showMap(main.map)
-        # Если в клетке бомба заканчиваем игру
-        if main.map[y][x] == 10:
-            print('Game over!')
-            break
-    elif text_input == 'flag':
-        if main.map[y][x] == 10:
-            main.map[y][x] = 20
+    def click(self, x, y):
+        if keyboard.is_pressed('f'):
+            self.clickRight(x, y)
         else:
-            main.map[y][x] = main.map[y][x]+11
-        main.showMap(main.map)
-    elif text_input == 'unflag':
-        if main.map[y][x] == 20:
-            main.map[y][x] = 10
+            self.clickLeft(x, y)
+            
+    def updateTime(self):       
+        currentTime = time.time() - self.time
+        self.timer['text'] = f'{round(currentTime)//60}:{round(currentTime)%60}'
+        if self.play == True:
+            self.last_time = time.time() - self.time
+            self.window.after(3, self.updateTime)
+            
+        
+            
+    def cleanWindow(self):
+        for widget in self.window.winfo_children():
+            widget.destroy()
+    
+    def clickLeft(self, x, y):
+        self.show[y][x] = 1
+        if self.map[y][x] == 0:
+            self.show = self.openZeros(self.map, [[x, y]], self.show, x, y)
+        if self.map[y][x] == 10: 
+            self.cleanWindow()
+            Label(text='Game over!').grid(column=0, row=0)
+            Button(text='New game', command=self.new_game).grid(column=0, row=1)
         else:
-            main.map[y][x] = main.map[y][x]-11
-        main.showMap(main.map)
-    if main.isWin(main.map):
-        print('Win!')
-        break
+            self.showMap(self.map)
+        if self.isWin(self.map) == True:
+            self.play = False
+            self.cleanWindow()
+            Label(text='Win!').grid(column=0, row=0)
+            Label(text=f'{round(self.last_time//60)}:{round(self.last_time%60)}').grid(column=0, row=1)
+            Button(text='New game', command=self.new_game).grid(column=0, row=2)
+            
+    def clickRight(self, x, y):
+        if self.map[y][x] < 11:
+            if self.map[y][x] == 10:
+                self.map[y][x] = 20
+            else:
+                self.map[y][x] = self.map[y][x]+11
+            self.showMap(self.map)
+        else:
+            if self.map[y][x] == 20:
+                self.map[y][x] = 10
+            else:
+                self.map[y][x] = self.map[y][x]-11
+            self.showMap(self.map)
+        if self.isWin(self.map) == True:
+            self.play = False
+            self.cleanWindow()
+            Label(text='Win!').grid(column=0, row=0)
+            Label(text=f'{round(self.last_time//60)}:{round(self.last_time%60)}').grid(column=0, row=1)
+            Button(text='New game', command=self.new_game).grid(column=0, row=2)
+            
+    def closeWindow(self):
+        self.window.destroy()
+        
+    def new_game(self):
+        self.closeWindow()
+        new_game()
+
+def new_game():
+    Tk().destroy()
+    
+    window = Tk()  
+    window.title("Sapper") 
+    window.geometry('300x108') 
+
+    height = Entry(window)
+    height.grid(column=1, row=0)
+    width = Entry(window)
+    width.grid(column=1, row=1)
+    bombs = Entry(window)
+    bombs.grid(column=1, row=2)
+
+    text = Label(window, text="Height").grid(column=0, row=0)
+    text2 = Label(window, text="Width").grid(column=0, row=1)
+    text3 = Label(window, text="Bombs count").grid(column=0, row=2)
+    
+    Button(window, text='Play', command=partial(start, height, width, bombs, window)).grid(column=1, row=3)
+    window.mainloop()
+
+def start(height, width, bombs, window):
+    height_r = int(height.get())
+    width_r = int(width.get())
+    bombs_r = int(bombs.get())
+    window.destroy()
+    main = Main(height_r, width_r, bombs_r)
+    while True:
+        pass
+
+
+new_game()
