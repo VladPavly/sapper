@@ -1,2 +1,2 @@
 # Sapper
-Console sapper on the python.
+Графический сапёр на Python.
