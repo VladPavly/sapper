@@ -8,7 +8,7 @@ Download main.py file, keyboard library and run.
 
 ### Prerequisites
 
-Python 3: https://www.python.org/downloads/
+Python 3: https://www.python.org/downloads/ \n
 keyboard: https://pypi.org/project/keyboard/
 
 ## Author
